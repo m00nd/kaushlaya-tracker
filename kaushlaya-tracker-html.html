@@ -3,485 +3,375 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <title>Kaushlaya's Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0f172a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-button{cursor:pointer;border:none;outline:none;transition:all .2s}
+html,body{min-height:100vh;background:#0f172a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
 input{outline:none;border:none;font-family:inherit}
-.task-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid #334155;background:#1e293b;margin-bottom:6px;user-select:none;transition:all .2s}
-.task-row:hover{border-color:#475569}
-.task-row.done-daily{background:rgba(34,197,94,.12);border-color:#22c55e}
-.task-row.done-weekly{background:rgba(59,130,246,.12);border-color:#3b82f6}
-.card{background:#1e293b;border-radius:12px;padding:14px;margin-bottom:10px}
-.tab-btn{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;color:#94a3b8;background:#1e293b}
+.hidden{display:none!important}
+/* Layout */
+#header{background:#1e293b;border-bottom:1px solid #334155;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+#reminder{background:rgba(245,158,11,.1);border-bottom:1px solid rgba(245,158,11,.3);padding:8px 16px;font-size:13px;color:#f59e0b}
+#main{max-width:480px;margin:0 auto;padding:16px 12px;padding-bottom:40px}
+/* Tabs */
+.tab-btn{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#1e293b;color:#94a3b8;transition:all .2s}
 .tab-btn.active{background:#22c55e;color:#fff}
-.section-label{font-size:11px;color:#64748b;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-top:8px}
-.add-btn{width:100%;padding:9px;border-radius:10px;border:1px dashed #334155;background:transparent;color:#64748b;font-size:13px;cursor:pointer;margin-bottom:8px;transition:all .2s}
+/* Cards */
+.card{background:#1e293b;border-radius:12px;padding:14px;margin-bottom:10px}
+/* Section label */
+.slabel{font-size:11px;color:#64748b;margin:12px 0 6px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+/* Task row */
+.trow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid #334155;background:#1e293b;margin-bottom:6px;user-select:none;transition:border-color .2s,background .2s}
+.trow:hover{border-color:#475569}
+.trow.done-d{background:rgba(34,197,94,.12);border-color:#22c55e!important}
+.trow.done-w{background:rgba(59,130,246,.12);border-color:#3b82f6!important}
+.trow .icon{font-size:18px;flex-shrink:0}
+.trow .lbl{flex:1;font-size:13px;font-weight:500;color:#e2e8f0;transition:all .2s}
+.trow.done-d .lbl,.trow.done-w .lbl{color:#64748b;text-decoration:line-through}
+.trow .drag{color:#475569;cursor:grab;font-size:14px;flex-shrink:0}
+.trow .rm{color:#ef4444;font-size:11px;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,.1);flex-shrink:0}
+.chk{width:20px;height:20px;border-radius:50%;border:2px solid #475569;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all .2s}
+.chk.cd{background:#22c55e;border-color:#22c55e;color:#fff}
+.chk.cw{background:#3b82f6;border-color:#3b82f6;color:#fff}
+/* Progress */
+.pbar{background:#334155;border-radius:99px;height:8px;overflow:hidden;margin-top:6px}
+.pfill{height:8px;border-radius:99px;background:#22c55e;transition:width .4s}
+/* Add button */
+.add-btn{width:100%;padding:9px;border-radius:10px;border:1px dashed #334155;background:transparent;color:#64748b;font-size:13px;margin-bottom:8px;transition:all .2s}
 .add-btn:hover{border-color:#475569;color:#94a3b8}
-.nav-btn{background:#1e293b;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px}
-.check-circle{width:20px;height:20px;border-radius:50%;border:2px solid #475569;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff}
-.check-circle.checked-daily{background:#22c55e;border-color:#22c55e}
-.check-circle.checked-weekly{background:#3b82f6;border-color:#3b82f6}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:50}
-.modal-box{background:#1e293b;border-radius:16px 16px 0 0;width:100%;max-width:480px;padding:20px;max-height:80vh;overflow-y:auto}
-.cal-day{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;transition:transform .15s;aspect-ratio:1/1}
-.cal-day:hover{transform:scale(1.1)}
-.cal-day.today{border-color:#fff}
+/* Add form */
+.add-form{background:#0f172a;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid #334155}
+.icon-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ic-opt{font-size:18px;cursor:pointer;padding:4px;border-radius:6px;border:1px solid transparent;transition:all .15s}
+.ic-opt.sel{background:rgba(34,197,94,.2);border-color:#22c55e}
+.form-row{display:flex;gap:8px}
+.form-row input{flex:1;background:#1e293b;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;border:1px solid #334155}
+.form-row .btn-add{background:#22c55e;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}
+.form-row .btn-cancel{background:#334155;color:#94a3b8;padding:8px 10px;border-radius:8px;font-size:13px}
+/* Perfect banner */
+#perfect-banner{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:14px;text-align:center;margin-bottom:10px}
+/* Calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-head{text-align:center;font-size:11px;color:#64748b;padding:4px 0}
+.cal-day{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;aspect-ratio:1/1;transition:transform .15s}
+.cal-day:hover:not(.future){transform:scale(1.1)}
+.cal-day.today{border-color:#fff!important}
 .cal-day.perfect{background:#22c55e}
 .cal-day.partial{background:#f59e0b}
 .cal-day.missed{background:#1e293b}
 .cal-day.future{background:#1e293b;opacity:.3;cursor:default}
+.cal-day span{font-size:11px;font-weight:700}
+.cal-day small{font-size:8px}
+.week-badge{text-align:right;font-size:10px;margin-bottom:4px;color:#475569}
+.week-badge.pw{color:#22c55e;font-weight:700}
+.legend{display:flex;gap:12px;margin-top:8px;font-size:11px;color:#64748b}
+.leg-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:middle}
+/* Nav */
+.nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.nav-btn{background:#1e293b;color:#fff;padding:6px 12px;border-radius:8px;font-size:13px}
+.nav-title{text-align:center}
+.nav-title p{font-weight:700}
+.nav-title small{font-size:11px;color:#94a3b8}
+.nav-title small.good{color:#22c55e}
+/* Stats */
+.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:#1e293b;border-radius:12px;padding:12px;text-align:center}
-.progress-bar{background:#334155;border-radius:99px;height:8px;overflow:hidden}
-.progress-fill{height:8px;border-radius:99px;background:#22c55e;transition:width .4s}
-.icon-picker{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.icon-opt{font-size:18px;cursor:pointer;padding:4px;border-radius:6px;border:1px solid transparent;transition:all .15s}
-.icon-opt.selected{background:rgba(34,197,94,.2);border-color:#22c55e}
-.remove-btn{color:#ef4444;font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,.1);border:none}
+.stat-card .se{font-size:22px}
+.stat-card .sv{font-size:18px;font-weight:700}
+.stat-card .sl{font-size:10px;color:#64748b}
+/* Modal */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+#modal-box{background:#1e293b;border-radius:16px 16px 0 0;width:100%;max-width:480px;padding:20px;max-height:80vh;overflow-y:auto}
+#modal-box .mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+#modal-box .close-btn{background:#334155;color:#94a3b8;border-radius:8px;padding:4px 10px;font-size:16px}
+/* Scrollbar */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:#1e293b}
 ::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
 </style>
 </head>
 <body>
-<div id="app"></div>
+
+<div id="header">
+  <div>
+    <div style="font-size:16px;font-weight:700">🎯 Kaushlaya's Tracker</div>
+    <div id="today-date" style="font-size:11px;color:#64748b"></div>
+  </div>
+  <div style="display:flex;gap:4px">
+    <button class="tab-btn active" onclick="setView('today')">📋 Today</button>
+    <button class="tab-btn" onclick="setView('calendar')">📅 Cal</button>
+    <button class="tab-btn" onclick="setView('stats')">📊 Stats</button>
+  </div>
+</div>
+
+<div id="reminder" class="hidden"></div>
+<div id="main"></div>
+<div id="modal-overlay" class="hidden" onclick="closeModal()">
+  <div id="modal-box" onclick="event.stopPropagation()"></div>
+</div>
 
 <script>
-const DEFAULT_DAILY=[
+// ── Data ────────────────────────────────────────────────────────────────────
+var DEFAULT_DAILY=[
   {id:"study",label:"8hrs Self Study",icon:"📚",fixed:true},
   {id:"questions",label:"4hrs Question Practice",icon:"✏️",fixed:true},
   {id:"exercise",label:"Exercise",icon:"💪",fixed:true},
   {id:"water",label:"3 Litres of Water",icon:"💧",fixed:true},
-  {id:"nojunk",label:"Avoided Junk Food",icon:"🥗",fixed:true},
+  {id:"nojunk",label:"Avoided Junk Food",icon:"🥗",fixed:true}
 ];
-const DEFAULT_WEEKLY=[
+var DEFAULT_WEEKLY=[
   {id:"room",label:"Room Organize",icon:"🏠",fixed:true},
-  {id:"sketch",label:"Sketching",icon:"🎨",fixed:true},
+  {id:"sketch",label:"Sketching",icon:"🎨",fixed:true}
 ];
-const ICONS=["📚","✏️","💪","💧","🥗","🏠","🎨","🧘","🏃","📖","🎵","🍎","💤","🧹","🌿","🎯","💻","📝","🛁","☀️"];
-const COLORS=["#22c55e","#3b82f6","#f59e0b","#06b6d4","#a78bfa","#f97316","#ec4899"];
+var ICONS=["📚","✏️","💪","💧","🥗","🏠","🎨","🧘","🏃","📖","🎵","🍎","💤","🧹","🌿","🎯","💻","📝","🛁","☀️"];
+var COLORS=["#22c55e","#3b82f6","#f59e0b","#06b6d4","#a78bfa","#f97316","#ec4899"];
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
-function dKey(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
-function todayKey(){const t=new Date();return dKey(t.getFullYear(),t.getMonth(),t.getDate())}
+var appData={}, dailyTasks=[], weeklyTasks=[], currentView="today";
+var calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+var selectedDay=null, addingFor=null, newIcon="📝", dragIdx=null, dragType=null;
+
+function loadData(){
+  try{
+    var d=localStorage.getItem("kt_data"); appData=d?JSON.parse(d):{};
+    var dt=localStorage.getItem("kt_daily"); dailyTasks=dt?JSON.parse(dt):JSON.parse(JSON.stringify(DEFAULT_DAILY));
+    var wt=localStorage.getItem("kt_weekly"); weeklyTasks=wt?JSON.parse(wt):JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
+  }catch(e){
+    appData={}; dailyTasks=JSON.parse(JSON.stringify(DEFAULT_DAILY)); weeklyTasks=JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
+  }
+}
+function saveData(){
+  try{
+    localStorage.setItem("kt_data",JSON.stringify(appData));
+    localStorage.setItem("kt_daily",JSON.stringify(dailyTasks));
+    localStorage.setItem("kt_weekly",JSON.stringify(weeklyTasks));
+  }catch(e){}
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function dKey(y,m,d){return y+"-"+pad(m+1)+"-"+pad(d)}
+function pad(n){return String(n).padStart(2,"0")}
+function todayKey(){var t=new Date();return dKey(t.getFullYear(),t.getMonth(),t.getDate())}
+function isPerfect(dk){return dailyTasks.length>0&&dailyTasks.every(function(t){return appData[dk]&&appData[dk].daily&&appData[dk].daily[t.id]})}
+function isPartial(dk){return dailyTasks.some(function(t){return appData[dk]&&appData[dk].daily&&appData[dk].daily[t.id]})}
+function toggle(dk,type,id){
+  if(!appData[dk])appData[dk]={daily:{},weekly:{}};
+  if(!appData[dk][type])appData[dk][type]={};
+  appData[dk][type][id]=!appData[dk][type][id];
+  saveData(); render();
+}
 function getWeeks(y,m){
-  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
-  const weeks=[];let week=Array(first).fill(null);
-  for(let d=1;d<=days;d++){week.push(d);if(week.length===7){weeks.push(week);week=[];}}
-  if(week.length){while(week.length<7)week.push(null);weeks.push(week);}
+  var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  var weeks=[],week=[];
+  for(var i=0;i<first;i++)week.push(0);
+  for(var d=1;d<=days;d++){week.push(d);if(week.length===7){weeks.push(week);week=[];}}
+  if(week.length){while(week.length<7)week.push(0);weeks.push(week);}
   return weeks;
 }
-function monthName(y,m){return new Date(y,m).toLocaleString("default",{month:"long",year:"numeric"})}
-function todayDisplay(){return new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}
-function el(tag,props,...children){
-  const e=document.createElement(tag);
-  if(props)Object.entries(props).forEach(([k,v])=>{
-    if(k==="className")e.className=v;
-    else if(k==="style"&&typeof v==="object")Object.assign(e.style,v);
-    else if(k.startsWith("on"))e.addEventListener(k.slice(2).toLowerCase(),v);
-    else e.setAttribute(k,v);
-  });
-  children.flat().forEach(c=>{if(c==null)return;e.appendChild(typeof c==="string"?document.createTextNode(c):c)});
-  return e;
-}
-
-// ─── State ─────────────────────────────────────────────────────────────────
-let state={
-  data:{},
-  dailyTasks:[...DEFAULT_DAILY],
-  weeklyTasks:[...DEFAULT_WEEKLY],
-  view:"today",
-  cal:{y:new Date().getFullYear(),m:new Date().getMonth()},
-  selDay:null,
-  addingFor:null,
-  newLabel:"",
-  newIcon:"📝",
-  dragIdx:null,
-  dragType:null,
-};
-
-function load(){
-  try{
-    const d=localStorage.getItem("ktracker-data");if(d)state.data=JSON.parse(d);
-    const dt=localStorage.getItem("ktracker-daily");if(dt)state.dailyTasks=JSON.parse(dt);
-    const wt=localStorage.getItem("ktracker-weekly");if(wt)state.weeklyTasks=JSON.parse(wt);
-  }catch{}
-}
-function save(){
-  try{
-    localStorage.setItem("ktracker-data",JSON.stringify(state.data));
-    localStorage.setItem("ktracker-daily",JSON.stringify(state.dailyTasks));
-    localStorage.setItem("ktracker-weekly",JSON.stringify(state.weeklyTasks));
-  }catch{}
-}
-function setState(patch){Object.assign(state,typeof patch==="function"?patch(state):patch);save();render();}
-
-// ─── Logic ─────────────────────────────────────────────────────────────────
-function toggle(dk,type,id){
-  const data={...state.data};
-  const day=data[dk]||{daily:{},weekly:{}};
-  const sec={...(day[type]||{})};
-  sec[id]=!sec[id];
-  data[dk]={...day,[type]:sec};
-  setState({data});
-}
-function isPerfect(dk){return state.dailyTasks.length>0&&state.dailyTasks.every(t=>state.data[dk]?.daily?.[t.id]);}
-function isPartial(dk){return state.dailyTasks.some(t=>state.data[dk]?.daily?.[t.id]);}
+function monthLabel(y,m){return new Date(y,m).toLocaleString("default",{month:"long",year:"numeric"})}
 function perfectInMonth(y,m){
-  const days=new Date(y,m+1,0).getDate();
-  let c=0;for(let d=1;d<=days;d++)if(isPerfect(dKey(y,m,d)))c++;
+  var days=new Date(y,m+1,0).getDate(),c=0;
+  for(var d=1;d<=days;d++)if(isPerfect(dKey(y,m,d)))c++;
   return c;
 }
-function addTask(type){
-  if(!state.newLabel.trim())return;
-  const task={id:"c"+Date.now(),label:state.newLabel.trim(),icon:state.newIcon,fixed:false};
-  if(type==="daily")setState({dailyTasks:[...state.dailyTasks,task],addingFor:null,newLabel:"",newIcon:"📝"});
-  else setState({weeklyTasks:[...state.weeklyTasks,task],addingFor:null,newLabel:"",newIcon:"📝"});
-}
-function removeTask(type,id){
-  if(type==="daily")setState({dailyTasks:state.dailyTasks.filter(t=>t.id!==id)});
-  else setState({weeklyTasks:state.weeklyTasks.filter(t=>t.id!==id)});
-}
-
-// ─── Build UI ───────────────────────────────────────────────────────────────
-function buildHeader(){
-  const tk=todayKey();
-  return el("div",{style:{background:"#1e293b",borderBottom:"1px solid #334155",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}},
-    el("div",null,
-      el("div",{style:{fontSize:16,fontWeight:700}},"🎯 Kaushlaya's Tracker"),
-      el("div",{style:{fontSize:11,color:"#64748b"}},todayDisplay())
-    ),
-    el("div",{style:{display:"flex",gap:4}},
-      ...["today","calendar","stats"].map(v=>
-        el("button",{className:"tab-btn"+(state.view===v?" active":""),onClick:()=>setState({view:v})},
-          v==="today"?"📋 Today":v==="calendar"?"📅 Cal":"📊 Stats"
-        )
-      )
-    )
-  );
-}
-
-function buildReminder(){
-  const tk=todayKey();
-  const done=state.dailyTasks.filter(t=>state.data[tk]?.daily?.[t.id]).length;
-  const rem=state.dailyTasks.length-done;
-  if(rem===0||state.view!=="today")return null;
-  return el("div",{style:{background:"rgba(245,158,11,.1)",borderBottom:"1px solid rgba(245,158,11,.3)",padding:"8px 16px",fontSize:13,color:"#f59e0b"}},
-    `⏰ ${rem} task${rem!==1?"s":""} remaining today — keep going!`
-  );
-}
-
-function buildTaskRow(task,done,type,idx,onToggle){
-  const row=el("div",{className:"task-row"+(done?(type==="weekly"?" done-weekly":" done-daily"):""),onClick:onToggle,draggable:true});
-  row.addEventListener("dragstart",()=>setState({dragIdx:idx,dragType:type}));
-  row.addEventListener("dragover",e=>{
-    e.preventDefault();
-    if(state.dragIdx===null||state.dragIdx===idx||state.dragType!==type)return;
-    const arr=type==="daily"?[...state.dailyTasks]:[...state.weeklyTasks];
-    const [moved]=arr.splice(state.dragIdx,1);
-    arr.splice(idx,0,moved);
-    if(type==="daily")setState({dailyTasks:arr,dragIdx:idx});
-    else setState({weeklyTasks:arr,dragIdx:idx});
+function setView(v){
+  currentView=v;
+  document.querySelectorAll(".tab-btn").forEach(function(b,i){
+    b.classList.toggle("active",["today","calendar","stats"][i]===v);
   });
-  row.addEventListener("dragend",()=>setState({dragIdx:null,dragType:null}));
-  row.appendChild(el("span",{style:{fontSize:18}},task.icon));
-  row.appendChild(el("span",{style:{flex:1,fontSize:13,fontWeight:500,color:done?"#64748b":"#e2e8f0",textDecoration:done?"line-through":"none"}},task.label));
-  if(!task.fixed){
-    const rb=el("button",{className:"remove-btn",onClick:e=>{e.stopPropagation();removeTask(type,task.id)}},"✕");
-    row.appendChild(rb);
-  }
-  const cc=el("div",{className:"check-circle"+(done?(type==="weekly"?" checked-weekly":" checked-daily"):"")},done?"✓":"");
-  row.appendChild(cc);
-  row.appendChild(el("span",{style:{color:"#475569",cursor:"grab",fontSize:14}},"⠿"));
-  return row;
+  render();
+}
+function closeModal(){selectedDay=null;document.getElementById("modal-overlay").classList.add("hidden");render();}
+function navCal(dir){
+  var d=new Date(calYear,calMonth+dir);
+  calYear=d.getFullYear();calMonth=d.getMonth();render();
 }
 
-function buildAddForm(type){
-  const wrap=el("div",{style:{background:"#0f172a",borderRadius:10,padding:12,marginBottom:8,border:"1px solid #334155"}});
-  const iconPicker=el("div",{className:"icon-picker"});
-  ICONS.forEach(ic=>{
-    const s=el("span",{className:"icon-opt"+(state.newIcon===ic?" selected":""),onClick:()=>setState({newIcon:ic})},ic);
-    iconPicker.appendChild(s);
-  });
-  wrap.appendChild(iconPicker);
-  const row=el("div",{style:{display:"flex",gap:8}});
-  const inp=el("input",{style:{flex:1,background:"#1e293b",color:"#fff",padding:"8px 12px",borderRadius:8,fontSize:13,border:"1px solid #334155"},placeholder:"Task name..."});
-  inp.value=state.newLabel;
-  inp.addEventListener("input",e=>state.newLabel=e.target.value);
-  inp.addEventListener("keydown",e=>{if(e.key==="Enter")addTask(type);});
-  const addB=el("button",{style:{background:"#22c55e",color:"#fff",padding:"8px 14px",borderRadius:8,fontSize:13,fontWeight:600},onClick:()=>addTask(type)},"Add");
-  const canB=el("button",{style:{background:"#334155",color:"#94a3b8",padding:"8px 10px",borderRadius:8,fontSize:13},onClick:()=>setState({addingFor:null,newLabel:"",newIcon:"📝"})},"✕");
-  row.append(inp,addB,canB);
-  wrap.appendChild(row);
-  return wrap;
+// ── Render ───────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById("today-date").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
+  updateReminder();
+  var main=document.getElementById("main");
+  if(currentView==="today")main.innerHTML=buildToday();
+  else if(currentView==="calendar")main.innerHTML=buildCalendar();
+  else main.innerHTML=buildStats();
+  bindEvents();
+  if(currentView==="stats")drawChart();
+}
+
+function updateReminder(){
+  var tk=todayKey(),done=dailyTasks.filter(function(t){return appData[tk]&&appData[tk].daily&&appData[tk].daily[t.id]}).length;
+  var rem=dailyTasks.length-done, el=document.getElementById("reminder");
+  if(rem>0&&currentView==="today"){el.textContent="⏰ "+rem+" task"+(rem!==1?"s":"")+" remaining today — keep going!";el.classList.remove("hidden");}
+  else el.classList.add("hidden");
 }
 
 function buildToday(){
-  const tk=todayKey();
-  const todayData=state.data[tk]||{daily:{},weekly:{}};
-  const done=state.dailyTasks.filter(t=>todayData.daily?.[t.id]).length;
-  const total=state.dailyTasks.length;
-  const pct=total?Math.round((done/total)*100):0;
-  const perfect=done===total&&total>0;
-  const wrap=el("div",null);
+  var tk=todayKey();
+  var done=dailyTasks.filter(function(t){return appData[tk]&&appData[tk].daily&&appData[tk].daily[t.id]}).length;
+  var total=dailyTasks.length, pct=total?Math.round(done/total*100):0, perfect=done===total&&total>0;
+  var h="";
+  if(perfect)h+='<div id="perfect-banner"><div style="font-size:32px">🏆</div><div style="color:#22c55e;font-weight:700;font-size:16px">Perfect Day, Kaushlaya!</div></div>';
+  h+='<div class="card"><div style="display:flex;justify-content:space-between;font-size:13px;color:#94a3b8;margin-bottom:6px"><span>Daily Progress</span><span style="color:#fff;font-weight:700">'+done+"/"+total+" — "+pct+'%</span></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div></div>';
+  h+='<div class="slabel">Daily Tasks — drag to reorder</div>';
+  dailyTasks.forEach(function(t,i){h+=taskRowHTML(t,!!(appData[tk]&&appData[tk].daily&&appData[tk].daily[t.id]),"daily",i,tk);});
+  if(addingFor==="daily")h+=addFormHTML("daily");
+  else h+='<button class="add-btn" onclick="openAdd(\'daily\')">+ Add Daily Task</button>';
+  h+='<div class="slabel">Weekly Tasks (once a week)</div>';
+  weeklyTasks.forEach(function(t,i){h+=taskRowHTML(t,!!(appData[tk]&&appData[tk].weekly&&appData[tk].weekly[t.id]),"weekly",i,tk);});
+  if(addingFor==="weekly")h+=addFormHTML("weekly");
+  else h+='<button class="add-btn" onclick="openAdd(\'weekly\')">+ Add Weekly Task</button>';
+  return h;
+}
 
-  if(perfect){
-    wrap.appendChild(el("div",{className:"card",style:{textAlign:"center",background:"rgba(34,197,94,.1)",border:"1px solid rgba(34,197,94,.3)"}},
-      el("div",{style:{fontSize:32}},"🏆"),
-      el("div",{style:{color:"#22c55e",fontWeight:700,fontSize:16}},"Perfect Day, Kaushlaya!")
-    ));
-  }
+function taskRowHTML(t,done,type,i,dk){
+  var cls="trow"+(done?(type==="weekly"?" done-w":" done-d"):"");
+  var chk='<div class="chk'+(done?(type==="weekly"?" cw":" cd"):"")+'">'+( done?"✓":"")+'</div>';
+  var rm=!t.fixed?'<button class="rm" onclick="removeTask(\''+type+'\',\''+t.id+'\',event)">✕</button>':"";
+  return '<div class="'+cls+'" onclick="toggle(\''+dk+'\',\''+type+'\',\''+t.id+'\')" draggable="true" data-idx="'+i+'" data-type="'+type+'"><span class="icon">'+t.icon+'</span><span class="lbl">'+t.label+'</span>'+rm+chk+'<span class="drag">⠿</span></div>';
+}
 
-  // Progress
-  const prog=el("div",{className:"card"});
-  prog.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:6,fontSize:13,color:"#94a3b8"}},
-    el("span",null,"Daily Progress"),
-    el("span",{style:{color:"#fff",fontWeight:700}},`${done}/${total} — ${pct}%`)
-  ));
-  const bar=el("div",{className:"progress-bar"});
-  bar.appendChild(el("div",{className:"progress-fill",style:{width:pct+"%"}}));
-  prog.appendChild(bar);
-  wrap.appendChild(prog);
-
-  // Daily
-  wrap.appendChild(el("div",{className:"section-label"},"Daily Tasks — drag to reorder"));
-  state.dailyTasks.forEach((task,i)=>{
-    const done=!!todayData.daily?.[task.id];
-    wrap.appendChild(buildTaskRow(task,done,"daily",i,()=>toggle(tk,"daily",task.id)));
-  });
-  if(state.addingFor==="daily") wrap.appendChild(buildAddForm("daily"));
-  else wrap.appendChild(el("button",{className:"add-btn",onClick:()=>setState({addingFor:"daily"})},"+ Add Daily Task"));
-
-  // Weekly
-  wrap.appendChild(el("div",{className:"section-label"},"Weekly Tasks (once a week)"));
-  state.weeklyTasks.forEach((task,i)=>{
-    const done=!!todayData.weekly?.[task.id];
-    wrap.appendChild(buildTaskRow(task,done,"weekly",i,()=>toggle(tk,"weekly",task.id)));
-  });
-  if(state.addingFor==="weekly") wrap.appendChild(buildAddForm("weekly"));
-  else wrap.appendChild(el("button",{className:"add-btn",onClick:()=>setState({addingFor:"weekly"})},"+ Add Weekly Task"));
-
-  return wrap;
+function addFormHTML(type){
+  var icons=ICONS.map(function(ic){return'<span class="ic-opt'+(newIcon===ic?" sel":"")+'" onclick="setIcon(\''+ic+'\')">'+ic+'</span>';}).join("");
+  return '<div class="add-form"><div class="icon-grid">'+icons+'</div><div class="form-row"><input id="new-task-input" type="text" placeholder="Task name..." onkeydown="if(event.key===\'Enter\')submitAdd(\''+type+'\')"/><button class="btn-add" onclick="submitAdd(\''+type+'\')">Add</button><button class="btn-cancel" onclick="cancelAdd()">✕</button></div></div>';
 }
 
 function buildCalendar(){
-  const {y,m}=state.cal;
-  const tk=todayKey();
-  const pd=perfectInMonth(y,m);
-  const isPM=pd>=25;
-  const wrap=el("div",null);
-
-  // Nav
-  const nav=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}});
-  nav.appendChild(el("button",{className:"nav-btn",onClick:()=>{const d=new Date(y,m-1);setState({cal:{y:d.getFullYear(),m:d.getMonth()}})}},"◀"));
-  nav.appendChild(el("div",{style:{textAlign:"center"}},
-    el("div",{style:{fontWeight:700}},monthName(y,m)),
-    el("div",{style:{fontSize:11,color:isPM?"#22c55e":"#94a3b8"}},isPM?"🏆 Perfect Month!":pd+"/25 perfect days")
-  ));
-  nav.appendChild(el("button",{className:"nav-btn",onClick:()=>{const d=new Date(y,m+1);setState({cal:{y:d.getFullYear(),m:d.getMonth()}})}},"▶"));
-  wrap.appendChild(nav);
-
-  // Day headers
-  const hdr=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:4}});
-  ["S","M","T","W","T","F","S"].forEach(d=>hdr.appendChild(el("div",{style:{textAlign:"center",fontSize:11,color:"#64748b",padding:"4px 0"}},d)));
-  wrap.appendChild(hdr);
-
-  getWeeks(y,m).forEach(week=>{
-    const pDays=week.filter(d=>d&&isPerfect(dKey(y,m,d))).length;
-    const wDone=state.weeklyTasks.every(t=>week.some(d=>d&&state.data[dKey(y,m,d)]?.weekly?.[t.id]));
-    const isPW=pDays>=6&&wDone;
-
-    const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:2}});
-    week.forEach(day=>{
-      if(!day){grid.appendChild(el("div",null));return;}
-      const dk=dKey(y,m,day);
-      const isToday=dk===tk;
-      const isFuture=new Date(y,m,day)>new Date();
-      const perf=isPerfect(dk),part=!perf&&isPartial(dk);
-      let cls="cal-day";
-      if(isToday)cls+=" today";
-      if(isFuture)cls+=" future";
-      else if(perf)cls+=" perfect";
-      else if(part)cls+=" partial";
-      else cls+=" missed";
-      const cell=el("div",{className:cls},
-        el("span",{style:{fontSize:11,fontWeight:700}},String(day)),
-        perf?el("span",{style:{fontSize:8}},"⭐"):null
-      );
-      if(!isFuture)cell.addEventListener("click",()=>setState({selDay:dk}));
-      grid.appendChild(cell);
+  var pd=perfectInMonth(calYear,calMonth), isPM=pd>=25;
+  var h='<div class="nav-row"><button class="nav-btn" onclick="navCal(-1)">◀</button><div class="nav-title"><p>'+monthLabel(calYear,calMonth)+'</p><small class="'+(isPM?"good":"")+'">'+( isPM?"🏆 Perfect Month!":pd+"/25 perfect days")+'</small></div><button class="nav-btn" onclick="navCal(1)">▶</button></div>';
+  h+='<div class="cal-grid">'+["S","M","T","W","T","F","S"].map(function(d){return'<div class="cal-head">'+d+'</div>';}).join("")+'</div>';
+  var tk=todayKey(),weeks=getWeeks(calYear,calMonth);
+  weeks.forEach(function(week){
+    h+='<div class="cal-grid" style="margin-bottom:2px">';
+    var pDays=0;
+    week.forEach(function(day){
+      if(!day){h+='<div></div>';return;}
+      var dk=dKey(calYear,calMonth,day);
+      var isToday=dk===tk, isFuture=new Date(calYear,calMonth,day)>new Date();
+      var perf=isPerfect(dk),part=!perf&&isPartial(dk);
+      var cls="cal-day"+(isToday?" today":"")+(isFuture?" future":perf?" perfect":part?" partial":" missed");
+      if(perf)pDays++;
+      var onclick=!isFuture?'onclick="openDay(\''+dk+'\')"':"";
+      h+='<div class="'+cls+'" '+onclick+'><span>'+day+'</span>'+(perf?'<small>⭐</small>':"")+'</div>';
     });
-    wrap.appendChild(grid);
-    if(pDays>0||isPW){
-      wrap.appendChild(el("div",{style:{textAlign:"right",fontSize:10,marginBottom:4,color:isPW?"#22c55e":"#475569",fontWeight:isPW?"700":"400"}},
-        isPW?`🏅 Perfect Week! (${pDays} days)`:`${pDays}/6 perfect days`
-      ));
-    }
+    h+='</div>';
+    var wDone=weeklyTasks.every(function(t){return week.some(function(d){return d&&appData[dKey(calYear,calMonth,d)]&&appData[dKey(calYear,calMonth,d)].weekly&&appData[dKey(calYear,calMonth,d)].weekly[t.id]});});
+    var isPW=pDays>=6&&wDone;
+    if(pDays>0||isPW)h+='<div class="week-badge'+(isPW?" pw":"")+'">'+( isPW?"🏅 Perfect Week! ("+pDays+" days)":pDays+"/6 perfect days")+'</div>';
   });
-
-  // Legend
-  const leg=el("div",{style:{display:"flex",gap:12,marginTop:8,fontSize:11,color:"#64748b"}});
-  [["#22c55e","Perfect"],["#f59e0b","Partial"],["#1e293b","Missed"]].forEach(([bg,label])=>{
-    const sq=el("span",{style:{display:"inline-block",width:10,height:10,borderRadius:3,background:bg,marginRight:4,border:bg==="#1e293b"?"1px solid #334155":"none"}});
-    const s=el("span",null,sq,label);
-    leg.appendChild(s);
-  });
-  wrap.appendChild(leg);
-  return wrap;
+  h+='<div class="legend"><span><span class="leg-dot" style="background:#22c55e"></span>Perfect</span><span><span class="leg-dot" style="background:#f59e0b"></span>Partial</span><span><span class="leg-dot" style="background:#1e293b;border:1px solid #334155"></span>Missed</span></div>';
+  return h;
 }
 
 function buildStats(){
-  const {y,m}=state.cal;
-  const pd=perfectInMonth(y,m);
-  const isPM=pd>=25;
-  const totalDays=new Date(y,m+1,0).getDate();
-  const wrap=el("div",null);
-
-  // Nav
-  const nav=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}});
-  nav.appendChild(el("button",{className:"nav-btn",onClick:()=>{const d=new Date(y,m-1);setState({cal:{y:d.getFullYear(),m:d.getMonth()}})}},"◀"));
-  nav.appendChild(el("div",{style:{fontWeight:700}},monthName(y,m)));
-  nav.appendChild(el("button",{className:"nav-btn",onClick:()=>{const d=new Date(y,m+1);setState({cal:{y:d.getFullYear(),m:d.getMonth()}})}},"▶"));
-  wrap.appendChild(nav);
-
-  // Summary cards
-  const cards=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}});
-  [
-    {e:"⭐",val:pd,label:"Perfect Days",color:"#22c55e"},
-    {e:"🏆",val:isPM?"YES!":pd+"/25",label:"Perfect Month",color:isPM?"#22c55e":"#f59e0b"},
-    {e:"📈",val:Math.round((pd/totalDays)*100)+"%",label:"Completion",color:"#3b82f6"},
-  ].forEach(c=>{
-    cards.appendChild(el("div",{className:"stat-card"},
-      el("div",{style:{fontSize:22}},c.e),
-      el("div",{style:{fontSize:18,fontWeight:700,color:c.color}},String(c.val)),
-      el("div",{style:{fontSize:10,color:"#64748b"}},c.label)
-    ));
+  var pd=perfectInMonth(calYear,calMonth), isPM=pd>=25, total=new Date(calYear,calMonth+1,0).getDate();
+  var h='<div class="nav-row"><button class="nav-btn" onclick="navCal(-1)">◀</button><div class="nav-title"><p>'+monthLabel(calYear,calMonth)+'</p></div><button class="nav-btn" onclick="navCal(1)">▶</button></div>';
+  h+='<div class="stat-cards">';
+  [{e:"⭐",v:pd,l:"Perfect Days",c:"#22c55e"},{e:"🏆",v:isPM?"YES!":pd+"/25",l:"Perfect Month",c:isPM?"#22c55e":"#f59e0b"},{e:"📈",v:Math.round(pd/total*100)+"%",l:"Completion",c:"#3b82f6"}].forEach(function(s){
+    h+='<div class="stat-card"><div class="se">'+s.e+'</div><div class="sv" style="color:'+s.c+'">'+s.v+'</div><div class="sl">'+s.l+'</div></div>';
   });
-  wrap.appendChild(cards);
+  h+='</div>';
+  h+='<div class="card"><div style="font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:10px">Task Completion</div><canvas id="chart" width="440" height="180" style="width:100%;max-height:180px"></canvas></div>';
+  h+='<div class="card"><div style="font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:10px">Weekly Tasks</div>';
+  var weeks=getWeeks(calYear,calMonth);
+  weeklyTasks.forEach(function(task){
+    var done=weeks.filter(function(w){return w.some(function(d){return d&&appData[dKey(calYear,calMonth,d)]&&appData[dKey(calYear,calMonth,d)].weekly&&appData[dKey(calYear,calMonth,d)].weekly[task.id]});}).length;
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>'+task.icon+'</span><span style="flex:1;font-size:13px">'+task.label+'</span><span style="color:#22c55e;font-weight:700;font-size:13px">'+done+"/"+weeks.length+" weeks</span></div>";
+  });
+  h+='</div>';
+  return h;
+}
 
-  // Bar chart (canvas-based)
-  const chartCard=el("div",{className:"card"});
-  chartCard.appendChild(el("div",{style:{fontSize:13,fontWeight:600,color:"#94a3b8",marginBottom:10}},`Task Completion — ${monthName(y,m)}`));
-  const canvas=el("canvas",{style:{width:"100%",maxHeight:"180px"}});
-  canvas.width=440;canvas.height=180;
-  chartCard.appendChild(canvas);
-  wrap.appendChild(chartCard);
+function drawChart(){
+  var canvas=document.getElementById("chart"); if(!canvas)return;
+  var ctx=canvas.getContext("2d");
+  var total=new Date(calYear,calMonth+1,0).getDate();
+  var taskData=dailyTasks.map(function(t){
+    var c=0;for(var d=1;d<=total;d++)if(appData[dKey(calYear,calMonth,d)]&&appData[dKey(calYear,calMonth,d)].daily&&appData[dKey(calYear,calMonth,d)].daily[t.id])c++;
+    return{label:t.icon+" "+t.label.split(" ").slice(0,2).join(" "),count:c};
+  });
+  var maxVal=Math.max.apply(null,taskData.map(function(d){return d.count}));if(!maxVal)maxVal=1;
+  var W=canvas.width,H=canvas.height,padL=30,bottom=50,n=taskData.length,slot=(W-padL-10)/n,bw=slot-8;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="#334155";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(padL,8);ctx.lineTo(padL,H-bottom);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(padL,H-bottom);ctx.lineTo(W-8,H-bottom);ctx.stroke();
+  taskData.forEach(function(d,i){
+    var x=padL+i*slot+4, bh=Math.max(((d.count/maxVal)*(H-bottom-16)),2), by=H-bottom-bh;
+    ctx.fillStyle=COLORS[i%COLORS.length];
+    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,by,bw,bh,3);else ctx.rect(x,by,bw,bh);ctx.fill();
+    ctx.fillStyle="#e2e8f0";ctx.font="bold 11px sans-serif";ctx.textAlign="center";
+    if(d.count>0)ctx.fillText(d.count,x+bw/2,by-3);
+    ctx.fillStyle="#64748b";ctx.font="9px sans-serif";
+    ctx.save();ctx.translate(x+bw/2,H-bottom+5);ctx.rotate(-0.55);ctx.textAlign="right";
+    ctx.fillText(d.label,0,0);ctx.restore();
+  });
+}
 
-  // Draw chart after DOM insert
-  setTimeout(()=>{
-    const ctx=canvas.getContext("2d");
-    const taskData=state.dailyTasks.map(t=>{
-      let c=0;for(let d=1;d<=totalDays;d++)if(state.data[dKey(y,m,d)]?.daily?.[t.id])c++;
-      return{label:t.icon+" "+t.label.split(" ").slice(0,2).join(" "),count:c};
+function buildModalContent(dk){
+  var sd=appData[dk]||{daily:{},weekly:{}};
+  var dateStr=new Date(dk+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
+  var perf=isPerfect(dk);
+  var h='<div class="mhdr"><div><div style="font-weight:700">'+dateStr+'</div>'+(perf?'<div style="color:#22c55e;font-size:12px;font-weight:600">⭐ Perfect Day!</div>':"")+'</div><button class="close-btn" onclick="closeModal()">✕</button></div>';
+  dailyTasks.forEach(function(t){
+    var done=!!(sd.daily&&sd.daily[t.id]);
+    h+='<div class="trow'+(done?" done-d":"")+ '" onclick="toggle(\''+dk+'\',\'daily\',\''+t.id+'\')" style="margin-bottom:6px"><span class="icon">'+t.icon+'</span><span class="lbl">'+t.label+'</span><div class="chk'+(done?" cd":"")+'">'+( done?"✓":"")+'</div></div>';
+  });
+  weeklyTasks.forEach(function(t){
+    var done=!!(sd.weekly&&sd.weekly[t.id]);
+    h+='<div class="trow'+(done?" done-w":"")+ '" onclick="toggle(\''+dk+'\',\'weekly\',\''+t.id+'\')" style="margin-bottom:6px"><span class="icon">'+t.icon+'</span><span class="lbl">'+t.label+' (weekly)</span><div class="chk'+(done?" cw":"")+'">'+( done?"✓":"")+'</div></div>';
+  });
+  return h;
+}
+
+// ── Event binders ────────────────────────────────────────────────────────────
+function bindEvents(){
+  document.querySelectorAll(".trow[draggable]").forEach(function(row){
+    row.addEventListener("dragstart",function(){dragIdx=parseInt(row.dataset.idx);dragType=row.dataset.type;});
+    row.addEventListener("dragover",function(e){
+      e.preventDefault();
+      var ti=parseInt(row.dataset.idx),tt=row.dataset.type;
+      if(dragIdx===null||dragIdx===ti||dragType!==tt)return;
+      var arr=tt==="daily"?dailyTasks:weeklyTasks;
+      var moved=arr.splice(dragIdx,1)[0];arr.splice(ti,0,moved);
+      dragIdx=ti;saveData();render();
     });
-    const maxVal=Math.max(...taskData.map(d=>d.count),1);
-    const W=canvas.width,H=canvas.height,pad=40,bottom=50;
-    const bw=(W-pad*2)/taskData.length-8;
-    ctx.clearRect(0,0,W,H);
-    taskData.forEach((d,i)=>{
-      const x=pad+i*((W-pad*2)/taskData.length)+4;
-      const bh=((d.count/maxVal)*(H-bottom-10));
-      const by=H-bottom-bh;
-      ctx.fillStyle=COLORS[i%COLORS.length];
-      ctx.beginPath();
-      ctx.roundRect(x,by,bw,bh,4);
-      ctx.fill();
-      ctx.fillStyle="#64748b";
-      ctx.font="9px sans-serif";
-      ctx.save();ctx.translate(x+bw/2,H-bottom+6);ctx.rotate(-0.6);
-      ctx.fillText(d.label,0,0);ctx.restore();
-      ctx.fillStyle="#e2e8f0";
-      ctx.font="bold 11px sans-serif";
-      ctx.textAlign="center";
-      ctx.fillText(d.count,x+bw/2,by-4);
-    });
-    // Y axis
-    ctx.strokeStyle="#334155";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pad,10);ctx.lineTo(pad,H-bottom);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(pad,H-bottom);ctx.lineTo(W-10,H-bottom);ctx.stroke();
-  },50);
-
-  // Weekly tasks
-  const wCard=el("div",{className:"card"});
-  wCard.appendChild(el("div",{style:{fontSize:13,fontWeight:600,color:"#94a3b8",marginBottom:10}},"Weekly Tasks"));
-  const weeks=getWeeks(y,m);
-  state.weeklyTasks.forEach(task=>{
-    const done=weeks.filter(w=>w.some(d=>d&&state.data[dKey(y,m,d)]?.weekly?.[task.id])).length;
-    const row=el("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:8}});
-    row.appendChild(el("span",null,task.icon));
-    row.appendChild(el("span",{style:{flex:1,fontSize:13}},task.label));
-    row.appendChild(el("span",{style:{color:"#22c55e",fontWeight:700,fontSize:13}},`${done}/${weeks.length} weeks`));
-    wCard.appendChild(row);
+    row.addEventListener("dragend",function(){dragIdx=null;dragType=null;});
   });
-  wrap.appendChild(wCard);
-  return wrap;
 }
 
-function buildModal(){
-  const dk=state.selDay;
-  if(!dk)return null;
-  const selData=state.data[dk]||{daily:{},weekly:{}};
-  const dateStr=new Date(dk+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
-  const perf=isPerfect(dk);
+// ── Global functions (called from HTML) ─────────────────────────────────────
+window.setView=setView;
+window.openAdd=function(type){addingFor=type;render();setTimeout(function(){var i=document.getElementById("new-task-input");if(i)i.focus();},50);};
+window.cancelAdd=function(){addingFor=null;render();};
+window.setIcon=function(ic){newIcon=ic;render();setTimeout(function(){var i=document.getElementById("new-task-input");if(i)i.focus();},50);};
+window.submitAdd=function(type){
+  var inp=document.getElementById("new-task-input");
+  var label=inp?inp.value.trim():"";
+  if(!label)return;
+  var task={id:"c"+Date.now(),label:label,icon:newIcon,fixed:false};
+  if(type==="daily")dailyTasks.push(task);else weeklyTasks.push(task);
+  addingFor=null;newIcon="📝";saveData();render();
+};
+window.removeTask=function(type,id,e){
+  if(e)e.stopPropagation();
+  if(type==="daily")dailyTasks=dailyTasks.filter(function(t){return t.id!==id;});
+  else weeklyTasks=weeklyTasks.filter(function(t){return t.id!==id;});
+  saveData();render();
+};
+window.openDay=function(dk){
+  selectedDay=dk;
+  var overlay=document.getElementById("modal-overlay"),box=document.getElementById("modal-box");
+  box.innerHTML=buildModalContent(dk);
+  overlay.classList.remove("hidden");
+};
+window.navCal=navCal;
+window.closeModal=closeModal;
+window.toggle=toggle;
 
-  const overlay=el("div",{className:"modal-overlay",onClick:()=>setState({selDay:null})});
-  const box=el("div",{className:"modal-box",onClick:e=>e.stopPropagation()});
-
-  const hdr=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}});
-  const hdrL=el("div",null,el("div",{style:{fontWeight:700}},dateStr));
-  if(perf)hdrL.appendChild(el("div",{style:{color:"#22c55e",fontSize:12,fontWeight:600}},"⭐ Perfect Day!"));
-  hdr.appendChild(hdrL);
-  hdr.appendChild(el("button",{style:{background:"#334155",color:"#94a3b8",border:"none",borderRadius:8,padding:"4px 10px",fontSize:16,cursor:"pointer"},onClick:()=>setState({selDay:null})},"✕"));
-  box.appendChild(hdr);
-
-  state.dailyTasks.forEach(task=>{
-    const done=!!selData.daily?.[task.id];
-    const row=el("div",{style:{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",
-      border:`1px solid ${done?"#22c55e":"#334155"}`,background:done?"rgba(34,197,94,.1)":"#0f172a",marginBottom:6},
-      onClick:()=>toggle(dk,"daily",task.id)});
-    row.append(el("span",null,task.icon),
-      el("span",{style:{flex:1,fontSize:13,color:done?"#64748b":"#e2e8f0",textDecoration:done?"line-through":"none"}},task.label),
-      el("div",{style:{width:18,height:18,borderRadius:"50%",border:`2px solid ${done?"#22c55e":"#475569"}`,
-        background:done?"#22c55e":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:9,color:"#fff"}},done?"✓":"")
-    );
-    box.appendChild(row);
-  });
-
-  state.weeklyTasks.forEach(task=>{
-    const done=!!selData.weekly?.[task.id];
-    const row=el("div",{style:{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",
-      border:`1px solid ${done?"#3b82f6":"#334155"}`,background:done?"rgba(59,130,246,.1)":"#0f172a",marginBottom:6},
-      onClick:()=>toggle(dk,"weekly",task.id)});
-    row.append(el("span",null,task.icon),
-      el("span",{style:{flex:1,fontSize:13,color:done?"#64748b":"#e2e8f0",textDecoration:done?"line-through":"none"}},task.label+" (weekly)"),
-      el("div",{style:{width:18,height:18,borderRadius:"50%",border:`2px solid ${done?"#3b82f6":"#475569"}`,
-        background:done?"#3b82f6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:9,color:"#fff"}},done?"✓":"")
-    );
-    box.appendChild(row);
-  });
-
-  overlay.appendChild(box);
-  return overlay;
-}
-
-// ─── Render ─────────────────────────────────────────────────────────────────
-function render(){
-  const root=document.getElementById("app");
-  root.innerHTML="";
-  root.appendChild(buildHeader());
-  const rem=buildReminder();
-  if(rem)root.appendChild(rem);
-  const main=el("div",{style:{maxWidth:480,margin:"0 auto",padding:"16px 12px"}});
-  if(state.view==="today")main.appendChild(buildToday());
-  else if(state.view==="calendar")main.appendChild(buildCalendar());
-  else main.appendChild(buildStats());
-  root.appendChild(main);
-  const modal=buildModal();
-  if(modal)root.appendChild(modal);
-}
-
-load();
+// ── Boot ─────────────────────────────────────────────────────────────────────
+loadData();
 render();
 </script>
 </body>
